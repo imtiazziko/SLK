@@ -1,88 +1,33 @@
 # Scalable Laplacian K-modes
 
-One Paragraph of project description goes here
+This is the code for Scalable Laplacian K-modes algorithm for large scale data clustering.
 
-## Getting Started
+## Prerequisites
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+The code is run and tested with python 3.5 and need the following packages:
 
-### Prerequisites
+- pyflann
+- annoy (if used as a option)
 
-What things you need to install the software and how to install them
+## Usage
 
+We give the the example script [test_SLK.py](test_SLK.py) for MNIST dataset with Feature learned from running GAN network. The learned features is in [gan_mnist.mat](gan_mnist.mat) in data folder.  
+To test simply run the following which run with tuned lambda and initial seed which get around 94% accuracy on MNIST 
 ```
-Give examples
-```
-
-### Installing
-
-A step by step series of examples that tell you have to get a development env running
-
-Say what the step will be
-
-```
-Give the example
+python test_SLK.py
 ```
 
-And repeat
+- To save the mode images and results set the parameters  in the line 27 and 28 to True
+- To run options SLK-BO or SLK-MS change SLK_option in [test_SLK.py](test_SLK.py)
+- To test with other dataset give the dataset as a feature array of form number of samples (N) x number of dimension (D) or accordingly.
 
-```
-until finished
-```
+## Modes
+Example modes found with SLK for MNIST
+ 
+<span><img src="data/mnist_mode_mean.png" alt="" height="150"/></span>
 
-End with an example of getting some data out of the system or using it for a little demo
-
-## Running the tests
-
-Explain how to run the automated tests for this system
-
-### Break down into end to end tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-### And coding style tests
-
-Explain what these tests test and why
-
-```
-Give an example
-```
-
-## Deployment
-
-Add additional notes about how to deploy this on a live system
-
-## Built With
-
-* [Dropwizard](http://www.dropwizard.io/1.0.2/docs/) - The web framework used
-* [Maven](https://maven.apache.org/) - Dependency Management
-* [ROME](https://rometools.github.io/rome/) - Used to generate RSS Feeds
-
-## Contributing
-
-Please read [CONTRIBUTING.md](https://gist.github.com/PurpleBooth/b24679402957c63ec426) for details on our code of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/your/project/tags). 
-
-## Authors
-
-* **Billie Thompson** - *Initial work* - [PurpleBooth](https://github.com/PurpleBooth)
-
-See also the list of [contributors](https://github.com/your/project/contributors) who participated in this project.
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
-
-## Acknowledgments
-
-* Hat tip to anyone who's code was used
-* Inspiration
-* etc
 
