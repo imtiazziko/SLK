@@ -1,0 +1,4 @@
+gan_mnist.mat filter=lfs diff=lfs merge=lfs -text
+data/gan_mnist.mat filter=lfs diff=lfs merge=lfs -text
+data/MNIST.mat filter=lfs diff=lfs merge=lfs -text
+data/W_5_gan_mnist.mat filter=lfs diff=lfs merge=lfs -text
