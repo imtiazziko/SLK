@@ -200,10 +200,3 @@ if __name__ == '__main__':
             mode_images_path = './data/'+dataset+'_modes/'
             util.mode_nn(mode_index,X,K,C,l,6,X_org,mode_images_path,(28,28))
 
-    # save arrays
-    # nmis = np.asarray(nmis)
-    # lmbdas = np.asarray(lmbdas)
-    # lapkmode_energy = np.asarray(lapkmode_energy)
-    # sio.savemat('./data/shutle_energy_lkmode_meanshift.mat',{'nmis':nmis,'lmbdas':lmbdas,'E':lapkmode_energy})
-    # pdb.set_trace()
-    # mode_nn(mode_index,X,K,C,l,5,X_org,'./data/MNIST_200_modes/')
