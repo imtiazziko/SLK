@@ -15,7 +15,6 @@ import pdb
 
 if __name__ == '__main__':
 
-#    dataset = 'mnist_200'
     dataset = 'gan_mnist'
 
 
