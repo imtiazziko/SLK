@@ -25,7 +25,7 @@ python test_SLK.py
 ## Modes
 Example modes found with SLK for MNIST
 
-<span><img src="data/mnist_mode_mean.png" alt="" align="middle" height="400"  width="500"/></span>
+<div align:"center"><img src="data/mnist_mode_mean.png" alt="" align="middle" height="400"  width="500"/></div>
 
 
 ## License
