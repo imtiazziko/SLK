@@ -6,7 +6,7 @@ COPYRIGHT, LICENSE & DISCLAIMER
     This software and its modifications can be used and distributed for 
     research purposes only. Publications resulting from use of this code
     must cite publications according to the rules given above. Only
-    Meng Tang and Dmitrii Marin can redistribute this code, unless expressed
+    Imtiaz Masud Ziko and Ismail Ben Ayed can redistribute this code, unless expressed
     permission is given otherwise. Commercial use of this code, any of 
     its parts, or its modifications is not permited.
 
