@@ -7,7 +7,7 @@ This is the code for Scalable Laplacian K-modes (SLK) algorithm for large scale 
 The code is run and tested with python 3.5 and need the following packages:
 
 - pyflann
-- annoy (if used as a option)
+- annoy (if used as an option)
 
 ## Usage
 
@@ -25,7 +25,7 @@ python test_SLK.py
 ## Modes
 Example modes found with SLK for MNIST
 
-<span><img src="data/mnist_mode_mean.png" alt=""/></span>
+<div align="center"><img src="data/mnist_mode_mean.png" alt="" height="400" width="500"/></div>
 
 
 ## License
