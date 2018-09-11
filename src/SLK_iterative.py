@@ -8,6 +8,7 @@ Created on Tue May 30 18:09:40 2017
 from __future__ import print_function,division
 import numpy as np
 import sys
+import math
 #import scipy.io as sio
 from scipy.spatial import distance as dist
 from sklearn.metrics.pairwise import euclidean_distances as ecdist
@@ -53,9 +54,11 @@ def KM(X,tmp,s):
     if tmp_size>size_limit: 
         batch_size = 1024
         Deg = []
-        for start in range(0,tmp_size,batch_size):
-            # print(start)
-            pairwise_dists = ecdist(X[tmp[start:start+batch_size]],squared =True)
+        num_batch = int(math.ceil(1.0*tmp_size/batch_size))
+        for batch_idx in range(num_batch):
+            start = batch_idx*batch_size
+            end = min((batch_idx+1)*batch_size, tmp_size)
+            pairwise_dists = ecdist(X[tmp[start:end]],squared =True)
             W = np.exp(-pairwise_dists/(2* (s ** 2)))
             np.fill_diagonal(W,0)
             Deg_batch = np.sum(W,axis=1).tolist()
@@ -170,7 +173,7 @@ def km_init(X,K,C_init):
 def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_plus",**opt):
     
     """ 
-    Proposed SLK method
+    Proposed SLK method with iterative mode updates
     
     """
     
@@ -230,13 +233,13 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
         if bound_==True:
             bound_lambda = opt['bound_lambda']
             bound_iterations = opt['bound_iterations']
-            parallel =opt['manual_parallel']
+            manual_parallel = False # False use auto numpy parallelization on BLAS/LAPACK/MKL
             sqdist = ecdist(X,C)
             unary = np.exp((-sqdist**2)/(2 * sigma ** 2))
             if method == 'SLK-BO':
-                l,C,mode_index,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,parallel)
+                l,C,mode_index,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
             else:
-                l,_,_,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,parallel)
+                l,_,_,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
                 
             if (len(np.unique(l))!=K):
                 print('not having some labels')
