@@ -11,6 +11,7 @@ from pyflann import *
 from PIL import Image
 from sklearn.utils import linear_assignment_
 from sklearn.metrics import accuracy_score
+import math
 
 def get_accuracy(L1, L2):
     if L1.__len__() != L2.__len__():
@@ -50,7 +51,7 @@ def create_affinity(X, knn, scale = None, alg = "annoy", savepath = None, W_path
         if alg == "flann":
             print('with Flann')
             flann = FLANN()
-            knnind,dist = flann.nn(X,X,knn, algorithm = "kdtree",cores = 5);
+            knnind,dist = flann.nn(X,X,knn, algorithm = "kdtree",target_precision = 0.9,cores = 5);
             # knnind = knnind[:,1:]
         elif alg == "annoy":
             print('with annoy')
@@ -126,14 +127,22 @@ def mode_nn(mode_index,X,K,C,l,knn,X_org,path,imsize):
             cluster_knn_im.save(savepath+'.png')
 
 
-def estimate_sigma(X,W,knn,N):
+def estimate_sigma(X,W,knn,N): 
     if N>70000:
-        batch_size = 128
+        batch_size = 4560
+        num_batch = int(math.ceil(1.0*X.shape[0]/batch_size))
         sigma_square = 0
-        for start in range(0,N,batch_size):
-            # print(start)
-            pairwise_dists = ecdist(X[start:start+batch_size],squared =True)
-            sigma_square = sigma_square+W[start:start+batch_size,:][:,start:start+batch_size].multiply(pairwise_dists).sum()
+        for batch_A in range(num_batch):
+            start1 = batch_A*batch_size
+            end1 = min((batch_A+1)*batch_size, N)
+            for batch_B in range(num_batch):
+                start2 = batch_B*batch_size
+                end2 = min((batch_B+1)*batch_size, N)
+                print("start1 = %d|start2 = %d"%(start1,start2))
+                pairwise_dists = ecdist(X[start1:end1],X[start2:end2],squared =True)
+                W_temp = W[start1:end1,:][:,start2:end2]
+                sigma_square = sigma_square+(W_temp.multiply(pairwise_dists)).sum()
+                print (sigma_square)
         sigma_square = sigma_square/(knn*N)
         sigma = np.sqrt(sigma_square)
     else:  
@@ -143,7 +152,7 @@ def estimate_sigma(X,W,knn,N):
         sigma = np.sqrt(sigma_square)
     return sigma
 
-def estimate_median_sigma(X,batch_size, knn):
+def estimate_median_sigma(X,knn,batch_size=1028):
     n = len(X)
     # sample a random batch of size batch_size
     sample = X[np.random.randint(n, size=batch_size), :]

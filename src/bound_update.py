@@ -11,6 +11,7 @@ import scipy.sparse as sps
 #import os
 import timeit
 from progressBar import printProgressBar
+import math
 
 SHARED_VARS = {}
 SHARED_array = {}
@@ -23,8 +24,11 @@ def normalize(Q_in):
     if N>size_limit:
         batch_size = 1280
         Q_out = []
-        for start in range(0,N,batch_size):
-            tmp = np.exp(Q_in[start:start+batch_size,:])
+        num_batch = int(math.ceil(1.0*N/batch_size))
+        for batch_idx in range(num_batch):
+            start = batch_idx*batch_size
+            end = min((batch_idx+1)*batch_size, N)
+            tmp = np.exp(Q_in[start:end,:])
             tmp = tmp/(np.sum(tmp,axis=1)[:,None])
             Q_out.append(tmp)
         del Q_in
@@ -80,47 +84,53 @@ def init(*pargs, **kwargs):
 
 def entropy_energy(Q,unary,kernel,bound_lambda,batch = False):
     tot_size = Q.shape[0]
-    pairwise = -kernel.dot(Q)
+    pairwise = kernel.dot(Q)
     if batch == False:
-        temp = (unary*Q).sum() + (bound_lambda*pairwise*Q).sum()
-        kl = (Q*np.log(np.maximum(Q,1e-20))).sum()+temp
+        temp = (unary*Q) + (-bound_lambda*pairwise*Q)
+        kl = (Q*np.log(np.maximum(Q,1e-20))+temp).sum()
     else:
         batch_size = 1024
+        num_batch = int(math.ceil(1.0*tot_size/batch_size))
         kl = 0
-        for start in range(0,tot_size,batch_size):
-            temp = (unary[start:start+batch_size]*Q[start:start+batch_size]).sum() + (bound_lambda*pairwise[start:start+batch_size]*Q[start:start+batch_size]).sum()
-            kl = kl+(Q[start:start+batch_size]*np.log(np.maximum(Q[start:start+batch_size],1e-20))).sum()+temp
+        for batch_idx in range(num_batch):
+            start = batch_idx*batch_size
+            end = min((batch_idx+1)*batch_size, tot_size)
+            temp = (unary[start:end]*Q[start:end]) + (-bound_lambda*pairwise[start:end]*Q[start:end])
+            kl = kl+(Q[start:end]*np.log(np.maximum(Q[start:end],1e-20))+temp).sum()
                 
     return kl
             
-def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False, parallel =False):
+def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False, manual_parallel =False):
     
+    """
+    Here in this code, Q refers to Z in our paper.
+    """
     start_time = timeit.default_timer()
     print("Inside Bound Update . . .")
     N,K = unary.shape;
     oldkl = float('inf')
 
     # Initialize the unary and Normalize
-    if parallel == False:
+    if manual_parallel == False:
         # print 'Parallel is FALSE'
-        Q = normalize(-unary)
+        Q = normalize(-unary) 
         for i in range(bound_iteration):
-            printProgressBar(i + 1, bound_iteration,length=15)
+            printProgressBar(i + 1, bound_iteration,length=12)
             additive = -unary
             mul_kernel = kernel.dot(Q)
             Q = -bound_lambda*mul_kernel
             additive = additive -Q
             Q = normalize(additive)
             kl = entropy_energy(Q,unary,kernel,bound_lambda,batch)
-            # print 'entropy_energy is ' +repr(kl) + ' at iteration ',i
+#            print('entropy_energy is ' +repr(kl) + ' at iteration ',i)
             if (i>1 and (abs(kl-oldkl)<= 1e-4*abs(oldkl))):
                 print('Converged')
                 break
 
             else:
-                oldkl = kl.copy(); oldQ =Q.copy();report_kl = kl      
+                oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl      
     else:
-        print('Parallel is TRUE')
+        print('Manual Parallel is TRUE')
         Q = normalize(-unary)
         
         init(kernel_s_data = n2m(kernel.data))
@@ -146,13 +156,15 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             pool.join()
             pool.terminate()
             kl = entropy_energy(Q,unary,kernel,bound_lambda,batch)
-            # print 'entropy_energy is ' +repr(kl) + ' at iteration ',i
+#            print ('entropy_energy is ' +repr(kl) + ' at iteration ',i)
             if (i>1 and (abs(kl-oldkl)<=1e-4*abs(oldkl))):
                 print('Converged')
                 break
             else:
                 oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl  
-
+            
+#            oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl
+            
     elapsed = timeit.default_timer() - start_time
     print('\n Elapsed Time in bound_update', elapsed)
     l = np.argmax(Q,axis=1)
