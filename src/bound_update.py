@@ -159,7 +159,6 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
 #            print ('entropy_energy is ' +repr(kl) + ' at iteration ',i)
             if (i>1 and (abs(kl-oldkl)<=1e-4*abs(oldkl))):
                 print('Converged')
-                report_kl = kl
                 break
             else:
                 oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl  
