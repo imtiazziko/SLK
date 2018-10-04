@@ -22,9 +22,9 @@ To test simply run the following which run with the tuned lambda and initial see
 python test_SLK.py
 ```
 
-- To save the mode images and the clustering results set the parameters in the line 27 and 28 to True
+- To save the mode images and the clustering results set the parameters in the line 26 and 27 to True
 - To run options SLK-BO or SLK-MS change SLK_option in [test_SLK.py](test_SLK.py)
-- To test with other datasets give the dataset as a feature array of form number of samples (N) x number of dimension (D) or a memmap file for big data size or according to the code.
+- To test with other datasets give the dataset as a feature array of form number of samples (N) x number of dimension (D) or a memmap file or accordingly.
 
 ## Modes
 Example modes found with SLK for MNIST
