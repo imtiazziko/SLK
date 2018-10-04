@@ -87,18 +87,18 @@ def entropy_energy(Q,unary,kernel,bound_lambda,batch = False):
     pairwise = kernel.dot(Q)
     if batch == False:
         temp = (unary*Q) + (-bound_lambda*pairwise*Q)
-        kl = (Q*np.log(np.maximum(Q,1e-20))+temp).sum()
+        E = (Q*np.log(np.maximum(Q,1e-20))+temp).sum()
     else:
         batch_size = 1024
         num_batch = int(math.ceil(1.0*tot_size/batch_size))
-        kl = 0
+        E = 0
         for batch_idx in range(num_batch):
             start = batch_idx*batch_size
             end = min((batch_idx+1)*batch_size, tot_size)
             temp = (unary[start:end]*Q[start:end]) + (-bound_lambda*pairwise[start:end]*Q[start:end])
-            kl = kl+(Q[start:end]*np.log(np.maximum(Q[start:end],1e-20))+temp).sum()
+            E = E+(Q[start:end]*np.log(np.maximum(Q[start:end],1e-20))+temp).sum()
                 
-    return kl
+    return E
             
 def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False, manual_parallel =False):
     
@@ -108,7 +108,7 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
     start_time = timeit.default_timer()
     print("Inside Bound Update . . .")
     N,K = unary.shape;
-    oldkl = float('inf')
+    oldE = float('inf')
 
     # Initialize the unary and Normalize
     if manual_parallel == False:
@@ -121,14 +121,15 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             Q = -bound_lambda*mul_kernel
             additive = additive -Q
             Q = normalize(additive)
-            kl = entropy_energy(Q,unary,kernel,bound_lambda,batch)
-#            print('entropy_energy is ' +repr(kl) + ' at iteration ',i)
-            if (i>1 and (abs(kl-oldkl)<= 1e-4*abs(oldkl))):
+            E = entropy_energy(Q,unary,kernel,bound_lambda,batch)
+#            print('entropy_energy is ' +repr(E) + ' at iteration ',i)
+            report_E = E
+            if (i>1 and (abs(E-oldE)<= 1e-5*abs(oldE))):
                 print('Converged')
                 break
 
             else:
-                oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl      
+                oldE = E.copy(); oldQ = Q.copy();report_E = E      
     else:
         print('Manual Parallel is TRUE')
         Q = normalize(-unary)
@@ -155,20 +156,18 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             pool.close()
             pool.join()
             pool.terminate()
-            kl = entropy_energy(Q,unary,kernel,bound_lambda,batch)
-#            print ('entropy_energy is ' +repr(kl) + ' at iteration ',i)
-            if (i>1 and (abs(kl-oldkl)<=1e-4*abs(oldkl))):
+            E = entropy_energy(Q,unary,kernel,bound_lambda,batch)
+#            print ('entropy_energy is ' +repr(E) + ' at iteration ',i)
+            if (i>1 and (abs(E-oldE)<=1e-5*abs(oldE))):
                 print('Converged')
                 break
             else:
-                oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl  
-            
-#            oldkl = kl.copy(); oldQ = Q.copy();report_kl = kl
-            
+                oldE = E.copy(); oldQ = Q.copy();report_E = E  
+                        
     elapsed = timeit.default_timer() - start_time
     print('\n Elapsed Time in bound_update', elapsed)
     l = np.argmax(Q,axis=1)
     ind = np.argmax(Q,axis=0)
     C= X[ind,:]
-    return l,C,ind,Q,report_kl
+    return l,C,ind,Q,report_E
 

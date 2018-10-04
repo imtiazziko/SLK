@@ -183,7 +183,7 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
 #    D =C.shape[1]
     trivial_status = False
     z = []
-    kl = []
+    bound_E = []
     mode_index = [];
     tol = 1e-3
     for i in range(100):
@@ -234,12 +234,12 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
             bound_lambda = opt['bound_lambda']
             bound_iterations = opt['bound_iterations']
             manual_parallel = False # False use auto numpy parallelization on BLAS/LAPACK/MKL
-            sqdist = ecdist(X,C)
-            unary = np.exp((-sqdist**2)/(2 * sigma ** 2))
+            sqdist = ecdist(X,C,squared=True)
+            unary = np.exp((-sqdist)/(2 * sigma ** 2))
             if method == 'SLK-BO':
-                l,C,mode_index,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
+                l,C,mode_index,z,bound_E = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
             else:
-                l,_,_,z,kl = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
+                l,_,_,z,bound_E = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
                 
             if (len(np.unique(l))!=K):
                 print('not having some labels')
@@ -258,7 +258,7 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
           
     elapsed = timeit.default_timer() - start_time
     print(elapsed) 
-    return C,l,elapsed,mode_index,z,kl,trivial_status
+    return C,l,elapsed,mode_index,z,bound_E,trivial_status
 
 #if __name__ == '__main__':
 #    main()

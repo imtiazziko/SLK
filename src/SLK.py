@@ -210,7 +210,7 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus",**opt):
     srange = [sigma]*K
     trivial_status = False
     z = []
-    kl = []
+    bound_E = []
     bound.init(X_s = X)
     bound.init(C_out=bound.new_shared_array([K,D], C.dtype))    
     for i in range(100):
@@ -250,15 +250,15 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus",**opt):
             bound_lambda = opt['bound_lambda']
             bound_iterations = opt['bound_iterations']
             manual_parallel = False # False use auto numpy parallelization on BLAS/LAPACK/MKL
-            sqdist = ecdist(X,C)
-            unary = np.exp((-sqdist**2)/(2 * sigma ** 2))
+            sqdist = ecdist(X,C,squared=True)
+            unary = np.exp((-sqdist)/(2 * sigma ** 2))
             batch = False
             if X.shape[0]>100000:
                 batch = True
             if method == 'SLK-BO':
-                l,C,mode_index,z,kl = bound.bound_update(-unary,X,W,bound_lambda,bound_iterations,batch,manual_parallel)
+                l,C,mode_index,z,bound_E = bound.bound_update(-unary,X,W,bound_lambda,bound_iterations,batch,manual_parallel)
             else:
-                l,_,_,z,kl = bound.bound_update(-unary,X,W,bound_lambda,bound_iterations,batch,manual_parallel)
+                l,_,_,z,bound_E = bound.bound_update(-unary,X,W,bound_lambda,bound_iterations,batch,manual_parallel)
                 
             if (len(np.unique(l))!=K):
                 print('not having some labels')
@@ -277,7 +277,7 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus",**opt):
 
     elapsed = timeit.default_timer() - start_time
     print(elapsed) 
-    return C,l,elapsed,mode_index,z,kl,trivial_status
+    return C,l,elapsed,mode_index,z,bound_E,trivial_status
 
 #if __name__ == '__main__':
 #    main()

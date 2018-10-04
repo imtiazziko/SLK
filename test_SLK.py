@@ -23,9 +23,9 @@ if __name__ == '__main__':
 #    SLK_option = 'SLK-BO'
     
 #  Save?
-    mode_images = True #  save mode images in a directory?
+    mode_images = False #  save mode images in a directory?
     saveresult = False  #  save results?
-
+    
 #   Give data matrix in samples by feature format ( N X D) or read in efficent memmap file for bigger dataset
     
     X_org = sio.loadmat('./data/MNIST.mat')['X']*255.0 # Original image intensities for mode visualization
@@ -85,6 +85,7 @@ if __name__ == '__main__':
         SLK_option = 'MS'
         
     bound_ = True # Setting False only runs K-modes
+
     
     if sigma is None:
         sigma = util.estimate_sigma(X,W,knn,N)
@@ -111,11 +112,14 @@ if __name__ == '__main__':
             
             if N>=5000:
                 if D<=50 and SLK_option == 'MS': # if dimension is less use iterative meanshift
-                    C,l,elapsed,mode_index,z,kl,ts = SLK_iterative(X, sigma, K, W, bound_, SLK_option, C_init, bound_lambda = lmbda, bound_iterations=200)
+                    C,l,elapsed,mode_index,z,_,ts = SLK_iterative(X, sigma, K, W, bound_, SLK_option, C_init,
+                                                                   bound_lambda = lmbda, bound_iterations=200)
                 else:
-                    C,l,elapsed,mode_index,z,kl,ts = SLK(X, sigma, K, W, bound_, SLK_option, C_init, bound_lambda = lmbda, bound_iterations=200)
+                    C,l,elapsed,mode_index,z,_,ts = SLK(X, sigma, K, W, bound_, SLK_option, C_init, 
+                                                         bound_lambda = lmbda, bound_iterations=200)
             else:
-                C,l,elapsed,mode_index,z,kl,ts = SLK_iterative(X, sigma, K, W, bound_, SLK_option,C_init, bound_lambda = lmbda, bound_iterations = 200)
+                C,l,elapsed,mode_index,z,_,ts = SLK_iterative(X, sigma, K, W, bound_, SLK_option,C_init, 
+                                                               bound_lambda = lmbda, bound_iterations = 200)
   
             if ts:
                 trivial[count] = 1
@@ -146,15 +150,18 @@ if __name__ == '__main__':
         # save best initialization
         np.save(init_C_path,best_C_init)
         
-        ### Run with best Lambda and assess generalization accuracy over whole dataset
+        ### Run with best Lambda and assess accuracy over whole dataset
         best_lambda = best_lambda_acc # or best_lambda_nmi
         if N>=5000:
             if D<=50 and SLK_option =='MS': #if dimension is less use iterative meanshift
-                C,l,elapsed,mode_index,z,kl,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,best_C_init, bound_lambda = best_lambda, bound_iterations=200)
+                C,l,elapsed,mode_index,z,_,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,best_C_init, 
+                                                              bound_lambda = best_lambda, bound_iterations=200)
             else:
-                C,l,elapsed,mode_index,z,kl,_ = SLK(X,sigma,K,W,bound_,SLK_option,best_C_init, bound_lambda = best_lambda, bound_iterations=200)
+                C,l,elapsed,mode_index,z,_,_ = SLK(X,sigma,K,W,bound_,SLK_option,best_C_init, 
+                                                    bound_lambda = best_lambda, bound_iterations=200)
         else:
-            C,l,elapsed,mode_index,z,kl,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,best_C_init, bound_lambda = best_lambda, bound_iterations=200)
+            C,l,elapsed,mode_index,z,_,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,best_C_init, 
+                                                          bound_lambda = best_lambda, bound_iterations=200)
         # Evaluate the performance on dataset
         
         print('Elapsed time for SLK = %0.5f seconds' %elapsed)
@@ -176,20 +183,23 @@ if __name__ == '__main__':
             else:
                 print('\n For Mode images change option to -- SLK-BO')
     else:
-       ### Run with best Lambda and assess generalization accuracy over whole dataset
+       ### Run with best Lambda and assess accuracy over whole dataset
         C_init = np.load(init_C_path) # Load initial seeds
         best_lambda_acc = 1.31 # best lambda got for MNIST gan features
         best_lambda = best_lambda_acc
 
         if N>=5000:
             if D<=50 and SLK_option == 'MS': #if dimension is less use iterative meanshift
-                C,l,elapsed,mode_index,z,kl,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,C_init, bound_lambda = best_lambda, bound_iterations=200,manual_parallel = False)
+                C,l,elapsed,mode_index,z,_,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,C_init, 
+                                                              bound_lambda = best_lambda, bound_iterations=200)
             else:
-                C,l,elapsed,mode_index,z,kl,_ = SLK(X,sigma,K,W,bound_,SLK_option,C_init, bound_lambda = best_lambda, bound_iterations=200,manual_parallel = False)
+                C,l,elapsed,mode_index,z,_,_ = SLK(X,sigma,K,W,bound_,SLK_option,C_init, 
+                                                    bound_lambda = best_lambda, bound_iterations=200)
         else:
-            C,l,elapsed,mode_index,z,kl,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,C_init, bound_lambda = best_lambda, bound_iterations=200,manual_parallel = False)        
+            C,l,elapsed,mode_index,z,_,_ = SLK_iterative(X,sigma,K,W,bound_,SLK_option,C_init, 
+                                                          bound_lambda = best_lambda, bound_iterations=200)        
                     # Evaluate the performance on dataset
-        print('Elapsed time for LKB = %0.5f seconds' %elapsed)
+        print('Elapsed time for SLK = %0.5f seconds' %elapsed)
         nmi_ = nmi(gnd_labels,l)
         acc_,_ = get_accuracy(gnd_labels,l)
         
@@ -201,9 +211,9 @@ if __name__ == '__main__':
             np.savez(saveresult_path,lmbda = best_lambda,l = l,C = C, z = z, mode_index = mode_index)
             
         if mode_images:
-            if SLK_option == 'SLK-B0':
+            if 'SLK-BO' in SLK_option:
                 mode_images_path = './data/'+dataset+'_modes'
                 original_image_size = (28,28)
                 util.mode_nn(mode_index,X,K,C,l,6,X_org,mode_images_path, original_image_size)
             else:
-                print('\n For Mode images change option to -- SLK-BO')
+                print('\n For Mode images change SLK_option to -- SLK-BO')
