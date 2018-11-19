@@ -164,7 +164,7 @@ def estimate_median_sigma(X,knn,batch_size=1028):
     distances, _ = nbrs.kneighbors(sample)
 
     # return the median distance
-    return np.median(distances[:, 1:knn])
+    return np.median(distances[:,knn])
     
 def validation_set(X,gnd_labels,K,val_frac):
     X_val = []
