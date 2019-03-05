@@ -2,7 +2,7 @@
 
 This is the code for Scalable Laplacian K-modes (SLK) algorithm for large scale data clustering. If you use this code please cite the following NIPS 2018 paper:
 
-**Scalable Laplacian K-modes**  
+[**Scalable Laplacian K-modes**](https://papers.nips.cc/paper/8208-scalable-laplacian-k-modes.pdf)  
 Imtiaz Masud Ziko, Eric Granger and Ismail Ben Ayed  
 In *Neural Information Processing Systems conference (NIPS)*, Montreal, Canada, December 2018.
 
