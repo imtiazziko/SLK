@@ -4,7 +4,7 @@ This is the code for Scalable Laplacian K-modes (SLK) algorithm for large scale 
 
 [**Scalable Laplacian K-modes**](https://papers.nips.cc/paper/8208-scalable-laplacian-k-modes.pdf)  
 Imtiaz Masud Ziko, Eric Granger and Ismail Ben Ayed  
-In *Neural Information Processing Systems conference (NIPS)*, Montreal, Canada, December 2018.
+In *Neural Information Processing Systems conference (NEURIPS)*, Montreal, Canada, December 2018.
 
 ## Prerequisites
 
