@@ -33,8 +33,8 @@ def MS(X,s,tmp,c0,tol,maxit):
     """
     # print 'inside meanshift iterations.'
     for i in range(maxit):
-        Y = dist.cdist(c0, X[tmp,:], 'euclidean')
-        W = np.exp((-Y**2)/(2 * s ** 2))
+        Y = ecdist(c0,X[tmp,:],squared=True)
+        W = np.exp((-Y)/(2 * s ** 2))
         c1 = np.dot(W,X[tmp,:])/np.sum(W)
         if np.amax(np.absolute(c1-c0))<tol*np.amax(np.absolute(c0)):
             break
