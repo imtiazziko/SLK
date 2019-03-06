@@ -89,7 +89,7 @@ if __name__ == '__main__':
     
     if sigma is None:
         sigma = util.estimate_sigma(X,W,knn,N)
-#        sigma = util.estimate_median_sigma(X,1024, knn) # Or this (much faster)
+#        sigma = util.estimate_median_sigma(X,knn) # Or this (much faster)
         
     
     # Initial seed path from kmeans++ seed
@@ -176,7 +176,7 @@ if __name__ == '__main__':
             sio.savemat(saveresult_path,{'lmbda':best_lambda,'l':l,'C':C,'z':z})
             
         if mode_images:
-            if SLK_option == 'SLK-B0':  
+            if SLK_option == 'SLK-BO':  
                 mode_images_path = './data/'+dataset+'_modes'
                 original_image_size = (28,28)
                 util.mode_nn(mode_index,X,K,C,l,6,X_org,mode_images_path, original_image_size)
