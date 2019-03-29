@@ -91,7 +91,7 @@ if __name__ == '__main__':
         sigma = util.estimate_sigma(X,W,knn,N)
 #        sigma = util.estimate_median_sigma(X,knn) # Or this (much faster)
         
-    
+    sigma = max(0.1,sigma)
     # Initial seed path from kmeans++ seed
     init_C_path = './data/'+dataset+'_C_init.npy'
 
