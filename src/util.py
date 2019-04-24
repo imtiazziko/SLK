@@ -4,7 +4,7 @@ import numpy as np
 import scipy.io as sio
 from sklearn.metrics.pairwise import euclidean_distances as ecdist
 from sklearn.neighbors import NearestNeighbors
-from annoy import AnnoyIndex
+# from annoy import AnnoyIndex
 from scipy import sparse
 import timeit
 from pyflann import *
@@ -53,18 +53,18 @@ def create_affinity(X, knn, scale = None, alg = "annoy", savepath = None, W_path
             flann = FLANN()
             knnind,dist = flann.nn(X,X,knn, algorithm = "kdtree",target_precision = 0.9,cores = 5);
             # knnind = knnind[:,1:]
-        elif alg == "annoy":
-            print('with annoy')
-            ann = AnnoyIndex(D, metric='euclidean')
-            for i, x_ in enumerate(X):
-                ann.add_item(i, x_)
-            ann.build(50)
-            knnind = np.empty((N, knn))
-            dist = np.empty((N, knn))
-            for i in range(len(X)):
-                nn_i = ann.get_nns_by_item(i, knn, include_distances=True)
-                knnind[i,:] = np.array(nn_i[0])
-                dist[i,:] = np.array(nn_i[1])
+        # elif alg == "annoy":
+        #     print('with annoy')
+        #     ann = AnnoyIndex(D, metric='euclidean')
+        #     for i, x_ in enumerate(X):
+        #         ann.add_item(i, x_)
+        #     ann.build(50)
+        #     knnind = np.empty((N, knn))
+        #     dist = np.empty((N, knn))
+        #     for i in range(len(X)):
+        #         nn_i = ann.get_nns_by_item(i, knn, include_distances=True)
+        #         knnind[i,:] = np.array(nn_i[0])
+        #         dist[i,:] = np.array(nn_i[1])
         else:
             nbrs = NearestNeighbors(n_neighbors=knn).fit(X)
             dist, knnind = nbrs.kneighbors(X)

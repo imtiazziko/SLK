@@ -11,7 +11,6 @@ In *Neural Information Processing Systems conference (NEURIPS)*, Montreal, Canad
 The code is run and tested with python 3.X and need the following packages:
 
 - pyflann
-- annoy (if used as an option)
 
 ## Usage
 
