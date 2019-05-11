@@ -154,6 +154,7 @@ def estimate_sigma(X,W,knn,N):
 
 def estimate_median_sigma(X,knn,batch_size=1028):
     n = len(X)
+    batch_size = min(n,batch_size)
     # sample a random batch of size batch_size
     sample = X[np.random.randint(n, size=batch_size), :]
     # flatten it
