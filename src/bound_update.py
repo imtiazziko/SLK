@@ -24,6 +24,7 @@ def normalize(Q_in):
     if N>size_limit:
         batch_size = 1280
         Q_out = []
+        Q_out_2 = []
         num_batch = int(math.ceil(1.0*N/batch_size))
         for batch_idx in range(num_batch):
             start = batch_idx*batch_size
@@ -129,7 +130,7 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
                 break
 
             else:
-                oldE = E.copy(); oldQ = Q.copy();report_E = E      
+                oldE = E.copy(); oldQ = Q.copy(); report_E = E      
     else:
         print('Manual Parallel is TRUE')
         Q = normalize(-unary)
@@ -158,11 +159,11 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             pool.terminate()
             E = entropy_energy(Q,unary,kernel,bound_lambda,batch)
 #            print ('entropy_energy is ' +repr(E) + ' at iteration ',i)
-            if (i>1 and (abs(E-oldE)<=1e-5*abs(oldE))):
+            if (i>1 and (abs(E-oldE)<=1e-4*abs(oldE))):
                 print('Converged')
                 break
             else:
-                oldE = E.copy(); oldQ = Q.copy();report_E = E  
+                oldE = E.copy(); oldQ = Q.copy(); report_E = E  
                         
     elapsed = timeit.default_timer() - start_time
     print('\n Elapsed Time in bound_update', elapsed)

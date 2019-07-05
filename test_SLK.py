@@ -11,7 +11,7 @@ from sklearn.metrics.cluster import normalized_mutual_info_score as nmi
 from util import get_accuracy
 import util
 import timeit
-
+import ipdb
 # if __name__ == '__main__':
 
 #    dataset = 'mnist_200'
@@ -20,7 +20,7 @@ dataset = 'gan_mnist'
 
 # SLK options SLK-BO/SLK-MS
 SLK_option = 'SLK-MS'
-#    SLK_option = 'SLK-BO'
+# SLK_option = 'SLK-BO'
 
 #  Save?
 mode_images = False #  save mode images in a directory?
@@ -69,6 +69,7 @@ start_time = timeit.default_timer()
 aff_path = './data/W_'+str(knn)+'_'+dataset+'.mat'
 #    sig = None
 ##    sig = estimate_median_sigma(X,1024, knn)
+# ipdb.set_trace()
 alg = "flann"
 if not os.path.exists(aff_path):
     W = util.create_affinity(X, knn, scale = None, alg = alg, savepath = aff_path, W_path = None)
@@ -100,7 +101,7 @@ if not os.path.exists(init_C_path):
     elapsetimes = []
     bestnmi = -1
     bestacc = -1
-    lmbdas = np.arange(1,5,0.1).tolist()
+    lmbdas = np.arange(0.5,5,0.1).tolist()
     t = len(lmbdas)
     trivial = [0]*t # Take count on any missing cluster 
     
@@ -110,6 +111,7 @@ if not os.path.exists(init_C_path):
         
         C_init,_ = km_init(X,K,'kmeans_plus')
         
+
         if N>=5000:
             if D<=50 and SLK_option == 'MS': # if dimension is less use iterative meanshift
                 C,l,elapsed,mode_index,z,_,ts = SLK_iterative(X, sigma, K, W, bound_, SLK_option, C_init,
@@ -206,6 +208,7 @@ else:
     print('Result: NMI= %0.4f' %nmi_)
     print('        Accuracy %0.4f' %acc_)
     
+    # ipdb.set_trace()
     if saveresult:
         saveresult_path = './data/Result_'+dataset+'_'+SLK_option+'.npz'
         np.savez(saveresult_path,lmbda = best_lambda,l = l,C = C, z = z, mode_index = mode_index)

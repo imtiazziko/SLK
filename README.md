@@ -31,7 +31,7 @@ Example modes found with SLK for MNIST
 <div align="center"><img src="data/mnist_mode_mean.png" alt="" height="400" width="500"/></div>
 
 
-## License
+<!-- ## License
 
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details. -->
 

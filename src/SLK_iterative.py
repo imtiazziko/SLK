@@ -114,6 +114,29 @@ def compute_km_energy(l,dist_c):
         E -= np.sum(dist_c[k,tmp])
     return E
 
+
+def compute_energy_lapkmode_cont(X,C,Q,W,sigma,bound_lambda):
+    
+    """
+    compute Laplacian K-modes energy in discrete form
+    
+    """
+    e_dist = ecdist(X,C,squared =True)
+    g_dist =  np.exp(-e_dist/(2*sigma**2))
+    pairwise = 0
+    Index_list = np.arange(X.shape[0])
+    for k in range(C.shape[0]):
+        Z_k = Q[:,k]
+        pairwise = pairwise + np.dot(np.transpose(Z_k), W.dot(Z_k))
+
+    E_kmode = (-(Q*g_dist)).sum()
+    print(E_kmode)
+    # E =  E_kmode - (bound_lambda)*pairwise
+    E_lap = (bound_lambda)*pairwise
+    print(E_lap)
+    E = E_kmode - E_lap
+    return E
+
 def compute_energy_lapkmode(X,C,l,W,sigma,bound_lambda):
     """
     compute Laplacian K-modes energy in discrete form
@@ -186,6 +209,7 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
     bound_E = []
     mode_index = [];
     tol = 1e-3
+    oldE = 1e100   
     for i in range(100):
         oldC = C.copy()
         oldl = l.copy()
@@ -252,9 +276,24 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
         else:    
             l = km_le(X,C,str('gp'),sigma)
         
-        if np.linalg.norm(C-oldC,'fro') < tol*np.linalg.norm(oldC,'fro'):
-          print('......Job  done......')
-          break
+        # Laplacian K-modes Energy
+
+        # currentE = compute_energy_lapkmode(X,C,l,W,sigma,bound_lambda)  # Discrete
+        currentE = compute_energy_lapkmode_cont(X,C,z,W,sigma,bound_lambda) # continuous
+        print('Laplacian K-mode Energy is = {:.5f}'.format(currentE))
+
+        # Convergence based on mode change
+        # if np.linalg.norm(C-oldC,'fro') < tol*np.linalg.norm(oldC,'fro'):
+        #   print('......Job  done......')
+        #   break
+
+        # Convergence based on Laplacian K-modes Energy
+        if (i>1 and (abs(currentE-oldE)<= 1e-4*abs(oldE))):
+            print('......Job  done......')
+            break
+
+        else:
+            oldE = currentE.copy()
           
     elapsed = timeit.default_timer() - start_time
     print(elapsed) 
