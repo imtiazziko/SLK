@@ -150,7 +150,7 @@ def compute_energy_lapkmode_cont(X,C,Q,W,sigma,bound_lambda):
     Index_list = np.arange(X.shape[0])
     for k in range(C.shape[0]):
         Z_k = Q[:,k]
-        pairwise = pairwise + np.dot(np.transpose(Z_k), W.dot(Z_k))
+        pairwise = pairwise + np.dot(Z_k, W.dot(Z_k))
 
     E_kmode = (-(Q*g_dist)).sum()
     print(E_kmode)
