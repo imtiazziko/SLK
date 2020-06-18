@@ -1,10 +1,13 @@
 from __future__ import print_function,division
+import os.path as osp
 import os
+import argparse
 import numpy as np
 import scipy.io as sio
 from sklearn.metrics.pairwise import euclidean_distances as ecdist
 from sklearn.neighbors import NearestNeighbors
 # from annoy import AnnoyIndex
+import errno
 from scipy import sparse
 import timeit
 from pyflann import *
@@ -37,7 +40,53 @@ def get_accuracy(L1, L2):
 
     return accuracy_score(L1, newL2),newL2
 
-def create_affinity(X, knn, scale = None, alg = "annoy", savepath = None, W_path = None):
+class Logger(object):
+    """
+    Write console output to external text file.
+
+    Code imported from https://github.com/Cysu/open-reid/blob/master/reid/utils/logging.py.
+    """
+    def __init__(self, fpath=None):
+        self.console = sys.stdout
+        self.file = None
+        if fpath is not None:
+            mkdir_if_missing(os.path.dirname(fpath))
+            self.file = open(fpath, 'w')
+
+    def __del__(self):
+        self.close()
+
+    def __enter__(self):
+        pass
+
+    def __exit__(self, *args):
+        self.close()
+
+    def write(self, msg):
+        self.console.write(msg)
+        if self.file is not None:
+            self.file.write(msg)
+
+    def flush(self):
+        self.console.flush()
+        if self.file is not None:
+            self.file.flush()
+            os.fsync(self.file.fileno())
+
+    def close(self):
+        self.console.close()
+        if self.file is not None:
+            self.file.close()
+
+def mkdir_if_missing(directory):
+    if not osp.exists(directory):
+        try:
+            os.makedirs(directory)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+
+def create_affinity(X, knn, scale = None, alg = None, savepath = None, W_path = None):
     N,D = X.shape
     if W_path is not None:
         if W_path.endswith('.mat'):
@@ -52,19 +101,6 @@ def create_affinity(X, knn, scale = None, alg = "annoy", savepath = None, W_path
             print('with Flann')
             flann = FLANN()
             knnind,dist = flann.nn(X,X,knn, algorithm = "kdtree",target_precision = 0.9,cores = 5);
-            # knnind = knnind[:,1:]
-        # elif alg == "annoy":
-        #     print('with annoy')
-        #     ann = AnnoyIndex(D, metric='euclidean')
-        #     for i, x_ in enumerate(X):
-        #         ann.add_item(i, x_)
-        #     ann.build(50)
-        #     knnind = np.empty((N, knn))
-        #     dist = np.empty((N, knn))
-        #     for i in range(len(X)):
-        #         nn_i = ann.get_nns_by_item(i, knn, include_distances=True)
-        #         knnind[i,:] = np.array(nn_i[0])
-        #         dist[i,:] = np.array(nn_i[1])
         else:
             nbrs = NearestNeighbors(n_neighbors=knn).fit(X)
             dist, knnind = nbrs.kneighbors(X)
@@ -188,3 +224,13 @@ def validation_set(X,gnd_labels,K,val_frac):
     gnd_val = np.hstack(gnd_val)
     indices = np.hstack(indices)
     return X_val,gnd_val,indices,imbalance
+
+def str2bool(v):
+    if isinstance(v, bool):
+       return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    elif v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    else:
+        raise argparse.ArgumentTypeError('Boolean value expected.')

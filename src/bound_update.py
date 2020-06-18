@@ -8,9 +8,8 @@ import numpy as np
 import multiprocessing
 import itertools
 import scipy.sparse as sps
-#import os
 import timeit
-from progressBar import printProgressBar
+from src.progressBar import printProgressBar
 import math
 
 SHARED_VARS = {}
@@ -100,11 +99,17 @@ def entropy_energy(Q,unary,kernel,bound_lambda,batch = False):
             E = E+(Q[start:end]*np.log(np.maximum(Q[start:end],1e-20))+temp).sum()
                 
     return E
+
+def get_S_discrete(l,N,K):
+    x = range(N)
+    temp =  np.zeros((N,K),dtype=float)
+    temp[(x,l)]=1
+    return temp
             
 def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False, manual_parallel =False):
     
     """
-    Here in this code, Q refers to Z in our paper.
+
     """
     start_time = timeit.default_timer()
     print("Inside Bound Update . . .")
@@ -123,7 +128,7 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             additive = additive -Q
             Q = normalize(additive)
             E = entropy_energy(Q,unary,kernel,bound_lambda,batch)
-#            print('entropy_energy is ' +repr(E) + ' at iteration ',i)
+            print('entropy_energy is ' +repr(E) + ' at iteration ',i)
             report_E = E
             if (i>1 and (abs(E-oldE)<= 1e-5*abs(oldE))):
                 print('Converged')

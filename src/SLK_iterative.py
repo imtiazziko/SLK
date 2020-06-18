@@ -5,7 +5,6 @@ Created on Tue May 30 18:09:40 2017
 
 @author: ziko
 """
-from __future__ import print_function,division
 import numpy as np
 import sys
 import math
@@ -15,7 +14,7 @@ from sklearn.metrics.pairwise import euclidean_distances as ecdist
 from sklearn.cluster import KMeans
 from sklearn.cluster.k_means_ import _init_centroids
 #import multiprocessing
-from bound_update import bound_update
+import src.bound_update as bound
 import timeit
 #import random
 
@@ -115,26 +114,31 @@ def compute_km_energy(l,dist_c):
     return E
 
 
-def compute_energy_lapkmode_cont(X,C,Q,W,sigma,bound_lambda):
-    
+def Laplacian_term(W,Z_k):
+    Lap_term = np.dot(Z_k, W.dot(Z_k))
+    return Lap_term
+
+def compute_energy_lapkmode_cont(X, C, Z, W, sigma, bound_lambda, method='Means'):
+
     """
-    compute Laplacian K-modes energy in discrete form
-    
+    compute Laplacian K-modes energy
+
     """
     e_dist = ecdist(X,C,squared =True)
-    g_dist =  np.exp(-e_dist/(2*sigma**2))
-    pairwise = 0
-    Index_list = np.arange(X.shape[0])
-    for k in range(C.shape[0]):
-        Z_k = Q[:,k]
-        pairwise = pairwise + np.dot(np.transpose(Z_k), W.dot(Z_k))
+    K = C.shape[0]
 
-    E_kmode = (-(Q*g_dist)).sum()
-    print(E_kmode)
-    # E =  E_kmode - (bound_lambda)*pairwise
-    E_lap = (bound_lambda)*pairwise
-    print(E_lap)
-    E = E_kmode - E_lap
+    if method =='Means':
+        clustering_E = (Z*e_dist).sum()
+
+    elif method in ['KM','MS','BO']:
+        g_dist =  np.exp(-e_dist/(2*sigma**2))
+        clustering_E = (-(Z*g_dist)).sum()
+
+    E_lap = [Laplacian_term(W,Z[:,k]) for k in range(K)]
+    E_lap = (bound_lambda*sum(E_lap)).sum()
+
+    E = clustering_E - E_lap
+
     return E
 
 def compute_energy_lapkmode(X,C,l,W,sigma,bound_lambda):
@@ -203,12 +207,11 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
     start_time = timeit.default_timer()
     C,l =  km_init(X,K,C_init)
     assert len(np.unique(l)) ==K
-#    D =C.shape[1]
     trivial_status = False
+    N,D = X.shape
     z = []
     bound_E = []
-    mode_index = [];
-    tol = 1e-3
+    mode_index = []
     oldE = 1e100   
     for i in range(100):
         oldC = C.copy()
@@ -223,7 +226,10 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
                 else:
                     tmp = tmp[0]
                 C[[k],] = MS(X,sigma,tmp,C[[k],],1e-5,int(1e3))
-            # print C.shape
+
+            sqdist = ecdist(X,C,squared=True)
+            unary = np.exp((-sqdist)/(2 * sigma ** 2))
+            a_p = -unary
         elif method== 'KM':
             mode_tmp = []
             for k in range(C.shape[0]):
@@ -235,8 +241,22 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
                 C[[k],],m = KM(X,tmp,sigma)
                 mode_tmp.append(m)
             mode_index = mode_tmp[:]
+            sqdist = ecdist(X,C,squared=True)
+            unary = np.exp((-sqdist)/(2 * sigma ** 2))
+            a_p = -unary
 
-        elif method == 'SLK-BO' and i==0:
+        elif method== 'Means':
+            for k in range(C.shape[0]):
+                tmp=np.asarray(np.where(l== k))
+                if tmp.size !=1:
+                    tmp = tmp.squeeze()
+                else:
+                    tmp = tmp[0]
+                C[[k],]= X[tmp,:].mean(axis = 0)
+            mode_index = None
+            a_p = ecdist(X,C,squared=True)
+
+        elif method == 'BO' and i==0:
             print('Inside SLK-BO')
             mode_tmp = []
             for k in range(C.shape[0]):
@@ -248,9 +268,12 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
                 C[[k],],m = KM(X,tmp,sigma)
                 mode_tmp.append(m)
             mode_index = mode_tmp[:]
+            sqdist = ecdist(X,C,squared=True)
+            unary = np.exp((-sqdist)/(2 * sigma ** 2))
+            a_p = -unary
             
-        elif method not in ['SLK-MS','SLK-BO','MS']:
-            print(' Error: Give appropriate method from SLK-MS/SLK-BO')
+        elif method not in ['MS','BO','MS','Means']:
+            print(' Error: Give appropriate method from MS/BO/Means')
             sys.exit(1)
         
 
@@ -258,12 +281,10 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
             bound_lambda = opt['bound_lambda']
             bound_iterations = opt['bound_iterations']
             manual_parallel = False # False use auto numpy parallelization on BLAS/LAPACK/MKL
-            sqdist = ecdist(X,C,squared=True)
-            unary = np.exp((-sqdist)/(2 * sigma ** 2))
-            if method == 'SLK-BO':
-                l,C,mode_index,z,bound_E = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
+            if method == 'BO':
+                l,C,mode_index,z,bound_E = bound.bound_update(a_p,X,W,bound_lambda,bound_iterations,manual_parallel)
             else:
-                l,_,_,z,bound_E = bound_update(-unary,X,W,bound_lambda,bound_iterations,manual_parallel)
+                l,_,_,z,bound_E = bound.bound_update(a_p,X,W,bound_lambda,bound_iterations,manual_parallel)
                 
             if (len(np.unique(l))!=K):
                 print('not having some labels')
@@ -272,14 +293,19 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
                 C =oldC.copy();
                 mode_index = oldmode_index;
                 break;
-            
-        else:    
-            l = km_le(X,C,str('gp'),sigma)
+
+        else:
+            if method in ['BO','MS']:
+                l = km_le(X,C,str('gp'),sigma)
+                z = bound.get_S_discrete(l,N,K)
+            else:
+                l = km_le(X,C,None,None)
+                z = bound.get_S_discrete(l,N,K)
         
         # Laplacian K-modes Energy
 
         # currentE = compute_energy_lapkmode(X,C,l,W,sigma,bound_lambda)  # Discrete
-        currentE = compute_energy_lapkmode_cont(X,C,z,W,sigma,bound_lambda) # continuous
+        currentE = compute_energy_lapkmode_cont(X, C, z, W, sigma, bound_lambda , method=method) # continuous
         print('Laplacian K-mode Energy is = {:.5f}'.format(currentE))
 
         # Convergence based on mode change
@@ -288,7 +314,7 @@ def SLK_iterative(X,sigma,K,W,bound_ = False, method = 'KM', C_init = "kmeans_pl
         #   break
 
         # Convergence based on Laplacian K-modes Energy
-        if (i>1 and (abs(currentE-oldE)<= 1e-4*abs(oldE))):
+        if (i>1 and (abs(currentE-oldE)<= 1e-5*abs(oldE))):
             print('......Job  done......')
             break
 
