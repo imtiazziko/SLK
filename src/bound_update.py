@@ -130,7 +130,7 @@ def bound_update(unary,X,kernel,bound_lambda,bound_iteration =20, batch = False,
             E = entropy_energy(Q,unary,kernel,bound_lambda,batch)
             print('entropy_energy is ' +repr(E) + ' at iteration ',i)
             report_E = E
-            if (i>1 and (abs(E-oldE)<= 1e-5*abs(oldE))):
+            if (i>1 and (abs(E-oldE)<= 1e-6*abs(oldE))):
                 print('Converged')
                 break
 

@@ -313,10 +313,11 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus", bound_
             unary = np.exp((-sqdist)/(2 * sigma ** 2))
             a_p = -unary
 
-        elif method == 'BO' and i==0:
+        elif method == 'BO':
             print('Inside SLK-BO')
-            mode_index = pool.map(KM_par,zip(srange,krange))
-            _,C = bound.get_shared_arrays('l_s','C_out')
+            if i==0:
+                mode_index = pool.map(KM_par,zip(srange,krange))
+                _,C = bound.get_shared_arrays('l_s','C_out')
             sqdist = ecdist(X,C,squared=True)
             unary = np.exp((-sqdist)/(2 * sigma ** 2))
             a_p = -unary
@@ -383,7 +384,7 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus", bound_
         #   break
 
         # Convergence based on Laplacian K-modes Energy
-        if (i>1 and (abs(currentE-oldE)<= 1e-4*abs(oldE))):
+        if (i>1 and (abs(currentE-oldE)<= 1e-5*abs(oldE))):
             print('......Job  done......')
             break
 
