@@ -26,14 +26,7 @@ def read_dataset(name, data_dir):
         sigma = 0.4
         X_org = np.load(data_dir+'mnist.npz')['X']*255.0 # Original image intensities for mode visualization
         knn=5
-    elif name == 'mnist_code':
-        data = np.load(data_dir+name+'.npz')
-        X = data['X']                               # data features
-        gnd_labels = data['gnd_labels']  # Ground truth for evaluation
-        K = 10
-        sigma = 0.4
-        X_org = np.load(data_dir+'mnist.npz')['X']*255.0 # Original image intensities for mode visualization
-        knn=5
+
     elif name == 'mnist':
         data = np.load(data_dir+name+'.npz')
         X = data['X']                               # data features
@@ -66,7 +59,7 @@ def read_dataset(name, data_dir):
         K = 7
         sigma = None
         X_org = None
-        knn=10
+        knn=5
 
     elif name == 'ytf':
         data = np.load(data_dir+name+'.npz')

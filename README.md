@@ -9,7 +9,7 @@ In *Neural Information Processing Systems conference (NEURIPS)*, Montreal, Canad
 ## Prerequisites
 
 1. The code is tested on python 3.6. Install the requirements listed in ([requirements.txt](./requirements.txt)) using pip or conda.
-2. Download the datasets features from [google drive link](https://drive.google.com/file/d/1EGOD3FIMQBxn1HZNTffjfw0BZmfvGwyI/view?usp=sharing).
+2. Download the datasets features from [google drive link](https://drive.google.com/file/d/1cOcP7_gZPNk_m5N8soV2Wqb4Adcs8WIi/view?usp=sharing).
 
 ## Usage
 To evaluate the code simply run the following script: 

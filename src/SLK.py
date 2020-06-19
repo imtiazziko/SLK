@@ -276,9 +276,8 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus", bound_
     C, l =  km_init(X,K,C_init)
     assert len(np.unique(l)) ==K
     N,D = X.shape
-    mode_index = [];
-    tol = 1e-3
-    krange = list(range(K));
+    mode_index = []
+    krange = list(range(K))
     srange = [sigma]*K
     trivial_status = False
     z = []
@@ -379,12 +378,12 @@ def SLK(X,sigma,K,W,bound_= False, method = 'MS', C_init = "kmeans_plus", bound_
         print('Laplacian K-mode Energy is = {:.5f}'.format(currentE))
 
         # Convergence based on mode change
-        # if np.linalg.norm(C-oldC,'fro') < tol*np.linalg.norm(oldC,'fro'):
+        # if np.linalg.norm(C-oldC,'fro') < 1e-4*np.linalg.norm(oldC,'fro'):
         #   print('......Job  done......')
         #   break
 
         # Convergence based on Laplacian K-modes Energy
-        if (i>1 and (abs(currentE-oldE)<= 1e-5*abs(oldE))):
+        if (i>1 and (abs(currentE-oldE)<= 1e-4*abs(oldE))):
             print('......Job  done......')
             break
 

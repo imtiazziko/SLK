@@ -165,20 +165,12 @@ def mode_nn(mode_index,X,K,C,l,knn,X_org,path,imsize):
 
 def estimate_sigma(X,W,knn,N): 
     if N>70000:
-        batch_size = 4560
-        num_batch = int(math.ceil(1.0*X.shape[0]/batch_size))
+        batch_size = 128
         sigma_square = 0
-        for batch_A in range(num_batch):
-            start1 = batch_A*batch_size
-            end1 = min((batch_A+1)*batch_size, N)
-            for batch_B in range(num_batch):
-                start2 = batch_B*batch_size
-                end2 = min((batch_B+1)*batch_size, N)
-                print("start1 = %d|start2 = %d"%(start1,start2))
-                pairwise_dists = ecdist(X[start1:end1],X[start2:end2],squared =True)
-                W_temp = W[start1:end1,:][:,start2:end2]
-                sigma_square = sigma_square+(W_temp.multiply(pairwise_dists)).sum()
-                print (sigma_square)
+        for start in range(0,N,batch_size):
+            # print(start)
+            pairwise_dists = ecdist(X[start:start+batch_size],squared =True)
+            sigma_square = sigma_square+W[start:start+batch_size,:][:,start:start+batch_size].multiply(pairwise_dists).sum()
         sigma_square = sigma_square/(knn*N)
         sigma = np.sqrt(sigma_square)
     else:  

@@ -11,12 +11,13 @@ import src.util as util
 import timeit
 import random
 from src.dataset_load import read_dataset, dataset_names
+import  pdb
 def main(args):
 
     if args.seed is not None:
         np.random.seed(args.seed)
         random.seed(args.seed)
-
+    # pdb.set_trace()
     dataset = args.dataset
     data_dir = './data/'
 
@@ -71,7 +72,7 @@ def main(args):
     ###### Run SLK#################################
 
     bound_ = args.bound # Setting False only runs K-modes
-    bound_it = 5000
+    bound_it = 1000
 
     if sigma is None:
         sigma = util.estimate_sigma(X,W,knn,N)
