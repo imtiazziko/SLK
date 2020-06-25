@@ -16,7 +16,7 @@ python main_SLK.py -d $dataset \
 
 ## Other datasets. Download the datasets first before uncommenting the followings
 #dataset=mnist
-#python test_SLK_update.py -d $dataset \
+#python main_SLK.py -d $dataset \
 #                       --SLK_option $mode \
 #                       --lmbda $lmd \
 #                       --lmbda-tune $tune \
